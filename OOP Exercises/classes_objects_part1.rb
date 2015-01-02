@@ -1,3 +1,4 @@
+#OOP testing
 class MyCar
   attr_accessor :color, :speed
   attr_reader :year, :model
@@ -44,11 +45,14 @@ class MyCar
   end
 end
 
+#Methods to help with testing the classes
 def say(something)
   num = 10
   puts "#{"-"*num}#{something}#{"-"*num}"
 end
 
+
+#Testing the classes
 system "clear"
 accord = MyCar.new(2010, "red","Honda Accord")
 say "Get Model"

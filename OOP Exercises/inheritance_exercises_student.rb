@@ -1,5 +1,6 @@
 # 7. Create a class 'Student' with attributes name and grade. Do NOT make the grade getter public, so joe.grade will raise an error. Create a better_grade_than? method, that you can call like so...
 
+#Student class
 class Student
   attr_accessor :name
 
@@ -41,6 +42,7 @@ class Student
   end
 end
 
+#Methods to help organize and test the classes and instance and class methods
 def say_title(something)
   puts "#{"-"*10}#{something}#{"-"*10}"
 end
@@ -48,6 +50,10 @@ end
 def say(something)
   puts something
 end
+
+#---------------------------
+#----------CODE-------------
+#---------------------------
 
 system "clear"
 say_title "Test Student Class"

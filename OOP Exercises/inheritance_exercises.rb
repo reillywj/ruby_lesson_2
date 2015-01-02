@@ -1,9 +1,11 @@
+#Module practice.
 module Towable
   def can_tow?(weight)
     weight < 10000
   end
 end
 
+#Vehicle class to practice inheritance to MyCar and MyTruck
 class Vehicle
   attr_accessor :color, :speed
   attr_reader :year, :model
@@ -69,6 +71,8 @@ class Vehicle
   end
 end
 
+
+#MyCar class which is a child of Vehicle
 class MyCar < Vehicle
   NUMBER_OF_DOORS = 4
   @@number_of_cars = 0
@@ -84,6 +88,7 @@ class MyCar < Vehicle
   end
 end
 
+#MyTruck which is also a child of Vehicle
 class MyTruck < Vehicle
   include Towable
   NUMBER_OF_DOORS = 2
@@ -101,6 +106,8 @@ class MyTruck < Vehicle
   end
 end
 
+
+#Useful Methods to test the inheritance exercises
 def say(message)
   puts "#{"-"*10}#{message}#{"-"*10}"
 end
