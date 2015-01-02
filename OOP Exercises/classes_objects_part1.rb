@@ -34,6 +34,14 @@ class MyCar
   def spray_paint(color_change)
     self.color = color_change
   end
+
+  def self.calculate_mileage(gallons = 16, miles = 450)
+    puts "Your gas mileage is #{miles/gallons} mpg."
+  end
+
+  def to_s
+    "You're driving a #{self.year}, #{color} #{self.model}."
+  end
 end
 
 def say(something)
@@ -72,9 +80,16 @@ accord.brake 30
 say "Turn Car off"
 accord.shut_car_off
 
+say "Calculate some mileage"
+MyCar.calculate_mileage(1, 30)
+MyCar.calculate_mileage(15,400)
 
+say "to_s method change"
+puts accord
 
-
+say "Answer to Exercise 3 part 2"
+puts "@name is a read only variable and only has a getter method"
+puts "must set :name symbol to either attr_accessor or attr_writer in order to be able to set the instance variable."
 
 
 
