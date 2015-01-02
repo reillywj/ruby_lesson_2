@@ -31,7 +31,7 @@ class MyCar
     puts "Car turned off."
   end
 
-  def paint_car_to(color_change)
+  def spray_paint(color_change)
     self.color = color_change
   end
 end
@@ -60,7 +60,7 @@ accord.shut_car_off
 say "Get Car Color before Paint Job"
 puts accord.color
 say "Get Paint Job and then get Color of Car"
-accord.paint_car_to("white")
+accord.spray_paint("white")
 puts accord.color
 say "Speed up by 20; Then speed up by 10"
 accord.speed_up 20
