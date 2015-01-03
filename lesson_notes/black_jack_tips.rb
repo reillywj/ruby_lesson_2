@@ -8,6 +8,9 @@
 # Need to consider where the action occurs
 # Such as deal: the dealer will ask the Deck to deal a card to the Player/Dealer as needed
 
+#GOAL: Is to understand Ruby coding when we get to Rails development, we can recognize the coding as Ruby.
+#GOAL: Want to be able to bend Rails to your own demands.
+
 #Multi-line editing: hold down Option key and click/drag cursor
 
 class Card
