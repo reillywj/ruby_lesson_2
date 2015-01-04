@@ -106,10 +106,6 @@ class RPS
       keep_playing?
     end
   end
-
-  def tell_choices
-    "You picked "
-  end
 end
 
 RPS.new.run
