@@ -41,6 +41,7 @@ end
 class Computer
   include Choices
   attr_accessor :choice
+
   def initialize
     @choice = ''
   end
@@ -51,9 +52,11 @@ class Computer
 end
 
 class RPS
-  attr_accessor :keep_playing
   include Choices
+  attr_accessor :keep_playing
+
   PLAYER_WINS_MATRIX = {["Rock", "Scissors"] => "Rock smashes Scissors.", ["Paper", "Rock"] => "Paper smothers Rock.", ["Scissors", "Paper"]=>"Scissors cuts Paper."}
+
   def initialize
     @keep_playing = true
   end
@@ -88,6 +91,7 @@ class RPS
 
   def show_winner(player_choice, computer_choice)
     choice_matrix = [player_choice, computer_choice]
+
     if choice_matrix[0] == choice_matrix[1]
       puts "It's a tie!"
     elsif PLAYER_WINS_MATRIX.keys.include? choice_matrix
