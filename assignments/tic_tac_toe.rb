@@ -3,8 +3,6 @@
 # Playing Tic Tac Toe game.  Two players take turns placing X's and O's on the board.  A player wins when they get three in a row.  It's a tie if all the spaces are taken and neither player has three in a row.
 class Board
   attr_accessor :boxes
-  
-  BOX_LOCATIONS = {'1' => [0,0], '2' => [0,1], '3' => [0,2], '4' => [1,0], '5' => [1,1], '6' => [1,2], '7' => [2,0], '8' => [2,1], '9' => [2,2]}
 
   def initialize
     @boxes = {'1' => '1', '2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6', '7' => '7', '8' => '8', '9' => '9'}
@@ -15,7 +13,7 @@ class Board
   end
 
   def array_of_marker_locations(marker)
-    boxes.select {|locations, box| box == marker.upcase}
+    boxes.select {|locations, box| box == marker.upcase}.keys
   end
 
   def available_boxes
@@ -38,14 +36,14 @@ class Board
 
   def line(start = 0)
     if start > 0
-      print "#{" "*2 + boxes[start.to_s] + " "*2}|#{" "*2 + boxes[(start+1).to_s] + " "*2}|#{" "*2 + boxes[(start+2).to_s] + " "*2}"
+      print "#{" " * 2 + boxes[start.to_s] + " " * 2}|#{" " * 2 + boxes[(start+1).to_s] + " " * 2}|#{" " * 2 + boxes[(start+2).to_s] + " " * 2}"
     else
-      print "#{" "*5}|#{" "*5}|#{" "*5}"
+      print "#{" " * 5}|#{" " * 5}|#{" " * 5}"
     end
   end
 
   def divider
-    section = "-"*5
+    section = "-" * 5
     print "#{section}+#{section}+#{section}"
   end
 
@@ -55,16 +53,15 @@ class Board
 end
 
 class Player
-  WINNING_POSITIONS = [['1','2','3'], ['4','5','6'],['7','8','9'],['1','4','7'],['2','5','8'],['3','6','9'],['1','5','9'],['3','5','7']]
-
   attr_reader :name
   attr_accessor :choice, :marker
 
+  WINNING_POSITIONS = [['1','2','3'], ['4','5','6'],['7','8','9'],['1','4','7'],['2','5','8'],['3','6','9'],['1','5','9'],['3','5','7']]
   MARKERS = ['x', 'o']
 
   def is_winner?(board)
     array = []
-    marker_locations = (board.array_of_marker_locations marker).keys
+    marker_locations = (board.array_of_marker_locations marker)
     WINNING_POSITIONS.each_index {|index| array[index] = (WINNING_POSITIONS[index] & marker_locations).count == 3}
     array.include? true
   end
@@ -134,7 +131,7 @@ class Computer < Player
       temporary_board = Board.new
       temporary_board.boxes = board.boxes.select {true}
       temporary_board.place_marker_on_board(location, player.marker)
-      computer_winning_moves << location if player.is_winner?(temporary_board)
+      computer_blocking_moves << location if player.is_winner?(temporary_board)
     end
     best_position = []
     best_position = (computer_winning_moves.shuffle << computer_blocking_moves.shuffle).flatten
@@ -148,9 +145,6 @@ class Computer < Player
 end
 
 class TTT
-
-  WINNING_POSITIONS = [['1','2','3'], ['4','5','6'],['7','8','9'],['1','4','7'],['2','5','8'],['3','6','9'],['1','5','9'],['3','5','7']]
-
   attr_accessor :winner, :no_positions, :play_again
 
   def initialize
