@@ -5,10 +5,6 @@
 # 4. Say who won
 # 5. Ask to play again
 
-class Throw
-  OPTIONS = ["Rock", "Paper", "Scissors"]
-end
-
 module Choices
   CHOICES = {'r' => 'Rock', 'p' => 'Paper', 's'=> 'Scissors'}
 end
