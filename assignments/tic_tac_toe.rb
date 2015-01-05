@@ -1,6 +1,7 @@
 #Tic Tac Toe
 
 # Playing Tic Tac Toe game.  Two players take turns placing X's and O's on the board.  A player wins when they get three in a row.  It's a tie if all the spaces are taken and neither player has three in a row.
+
 class Board
   attr_accessor :boxes
 
@@ -60,8 +61,8 @@ class Player
   MARKERS = ['x', 'o']
 
   def is_winner?(board)
-    array = []
-    marker_locations = (board.array_of_marker_locations marker)
+    array             = []
+    marker_locations  = (board.array_of_marker_locations marker)
     WINNING_POSITIONS.each_index {|index| array[index] = (WINNING_POSITIONS[index] & marker_locations).count == 3}
     array.include? true
   end
@@ -77,15 +78,15 @@ end
 
 class Human < Player
 
-  def initialize
-    puts "Enter your name: "
-    @name = gets.chomp
-    @marker = ask_user_which_marker
+  def initialize(player_number)
+    puts "#{player_number}, enter your name: "
+    @name   = gets.chomp
+    @marker = "x"
     @choice = ""
   end
 
   def ask_user_which_marker
-    puts "Which piece? X or O or random. Note: X goes first."
+    puts "#{name}, which piece would you like to be? X or O or random. Note: X goes first."
     answer = "x"
     begin
       tell_invalid(answer) unless MARKERS.include? answer
@@ -101,9 +102,9 @@ class Human < Player
 end
 
 class Computer < Player
-  def initialize(marker)
-    @name = "The Computer"
-    @marker = marker
+  def initialize
+    @name   = "The Computer"
+    @marker = 'o'
     @choice = ""
   end
 
@@ -112,15 +113,15 @@ class Computer < Player
   end
 
   def find_best_position_available(board, player)
-    temporary_board = Board.new
-    temporary_board.boxes = board.boxes.select {true}
-    available_positions = board.available_boxes
-    computer_winning_moves = []
+    temporary_board         = Board.new
+    temporary_board.boxes   = board.boxes.select {true}
+    available_positions     = board.available_boxes
+    computer_winning_moves  = []
     computer_blocking_moves = []
 
     #Check to see if one of the positions is available for the computer to win the game
     available_positions.each do |location|
-      temporary_board = Board.new
+      temporary_board       = Board.new
       temporary_board.boxes = board.boxes.select {true}
       temporary_board.place_marker_on_board(location, marker)
       computer_winning_moves << location if is_winner?(temporary_board)
@@ -128,7 +129,7 @@ class Computer < Player
 
     #Check to see if the computer must block their opponents next best move
     available_positions.each do |location|
-      temporary_board = Board.new
+      temporary_board       = Board.new
       temporary_board.boxes = board.boxes.select {true}
       temporary_board.place_marker_on_board(location, player.marker)
       computer_blocking_moves << location if player.is_winner?(temporary_board)
@@ -145,67 +146,112 @@ class Computer < Player
 end
 
 class TTT
-  attr_accessor :winner, :no_positions, :play_again
+  attr_accessor :winner, :no_positions, :play_again, :current_player
 
   def initialize
-    @winner = false
-    @no_positions = false
-    @play_again = false
+    @winner         = false
+    @no_positions   = false
+    @play_again     = false
+    @current_player = ""
   end
 
   def play
     system "clear"
     say_title "Tic Tac Toe"
-    human = Human.new
-    computer_marker = "x" if human.marker.downcase == "o"
-    computer_marker = "o" if human.marker.downcase == "x"
-    computer = Computer.new(computer_marker)
-    puts human.to_s
-    puts computer.to_s
-
-    ttt_board = Board.new
+    number_of_players = ask_number_of_players
+    player1           = Human.new("Player 1")
+    player2           = Computer.new          if number_of_players == 1
+    player2           = Human.new("Player 2") if number_of_players == 2
+    ttt_board         = Board.new
     begin
-      human.marker = human.ask_user_which_marker if play_again
-      if play_again
-        computer.marker = "x" if human.marker == "o"
-        computer.marker = "o" if human.marker == "x"
-      end
+      player1.marker  = player1.ask_user_which_marker
+
+      set_computer_marker_and_current_player(player1, player2)
+
       begin
         system "clear"
-        computer_place_best_piece(ttt_board, computer, human) if computer.marker == "x"
-        say_title "#{human.name}, It's Your Turn"
-        ttt_board.show_board
-        player_location = ""
-        self.no_positions = check_if_positions ttt_board
-        until no_positions || ttt_board.available_boxes.include?(player_location)
-          player_location = ask_user "Where would you like to place your #{human.marker.upcase}?"
+        
+        if    current_player.class.to_s == "Computer"
+          computer_place_best_piece(ttt_board, player2, player1)
+          ttt_board.show_board
+        elsif current_player.class.to_s == "Human"
+          say_title "#{current_player.name}, It's Your Turn"
+          ttt_board.show_board
+
+          #Player chooses location if choice is available, then place on board.
+          player_choice   = ""
+          self.no_positions = check_if_positions ttt_board
+          until no_positions || ttt_board.available_boxes.include?(player_choice)
+            player_choice = ask_user "Where would you like to place your #{current_player.marker.upcase}?"
+          end
+          ttt_board.place_marker_on_board(player_choice, current_player.marker)
         end
-        ttt_board.place_marker_on_board(player_location, human.marker) unless no_positions
+
+        #Alternate turns
+        alternate_current_player(player1, player2)
 
         self.no_positions = check_if_positions ttt_board
-        computer_place_best_piece(ttt_board, computer, human) if computer.marker == "o" && !no_positions && !(human.is_winner? ttt_board)
-
-        self.no_positions = check_if_positions ttt_board
-        self.winner = check_if_winner(ttt_board, human, computer)
+        self.winner       = check_if_winner(ttt_board, player1, player2)
       end until no_positions || winner
       system "clear"
       say_title "GAME OVER"
-      puts human.to_s
-      puts human.is_winner? ttt_board
-      puts computer.to_s
-      puts computer.is_winner? ttt_board
+      puts player1.to_s
+      puts player2.to_s
 
-      declare_results(ttt_board, human, computer)
+      declare_results(ttt_board, player1, player2)
 
       say_title "Play again?"
-      answer = ""
-
-      answer = ask_user "Would you like to play again? y or n: " until ['y','n'].include? answer
+      answer          = ""
+      answer          = ask_user "Would you like to play again? y or n: " until ['y','n'].include? answer
       self.play_again = answer == 'y'
       ttt_board = Board.new
     end while play_again
+
+    good_bye_sequence(player1, player2)
+  end
+
+  def ask_number_of_players
+    number_of_players = 1
+    say_title "Number of Players"
+    say "How many players? 1 or 2: "
+    response = gets.chomp
+    if response.to_i.to_s == response
+      number_of_players = response.to_i
+    else
+      say "#{response} was invalid. Looking for 1 or 2 players: "
+      ask_number_of_players
+    end
+    number_of_players
+  end
+
+  def good_bye_sequence(player1, player2)
+    system 'clear'
     say_title "Game is Terminating"
-    say "#{human.name}, Thank you for playing Tic Tac Toe!"
+    say "#{player1.name}, Thank you for playing #{player2.name} in Tic Tac Toe!"
+    sleep 1.0
+    say "Screen will clear automatically in 2 seconds."
+    sleep 2.0
+    say "Have a nice day!"
+    sleep 1.0
+    system 'clear'
+  end
+
+  def alternate_current_player(player1, player2)
+    if current_player == player1
+      self.current_player = player2
+    else
+      self.current_player = player1
+    end
+  end
+
+  def set_computer_marker_and_current_player(player1, player2)
+    if player1.marker.downcase == "o"
+      player2.marker = "x"
+      self.current_player = player2
+    else
+      player2.marker = "o"
+      self.current_player = player1
+    end
   end
 
   def check_if_winner(board, player1, player2)
