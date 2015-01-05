@@ -89,9 +89,9 @@ class GeneralPlayer
   attr_accessor :hand, :name, :hit_value
 
   def initialize(n)
-    @hand = Hand.new
-    @name = n
-    @hit_value = true
+    @hand       = Hand.new
+    @name       = n
+    @hit_value  = true
   end
 
   def hit?
