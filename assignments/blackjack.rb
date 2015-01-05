@@ -28,6 +28,7 @@
 #     -Deal two cards to all players
 #     -Ask each Player to hit/stay until stay or bust
 #     -Dealer receive
+#  Note: Moved hand from GeneralPlayer into its own class and is then pulled into a GeneralPlayer
 
 # Now build into classes
 
@@ -115,11 +116,60 @@ class GeneralPlayer
 end
 
 class Player < GeneralPlayer
+  attr_accessor :bank, :current_bet, :play_again
+  
+  MINIMUM_BET = 50
+  
   def initialize(player_number = 1)
-    @hand = Hand.new
-    puts "Player #{player_number}, what's your name?"
-    @name = gets.chomp
-    @hit_value = true
+    @hand         = Hand.new
+    puts          "Player #{player_number}, what's your name?"
+    @name         = gets.chomp
+    @hit_value    = true
+    @bank         = 1000
+    @current_bet  = 0
+    @play_again   = true
+  end
+  
+  def bet
+    puts "You have #{bank} in your bank."
+    puts "How much would you like to bet?"
+    amount = gets.chomp.to_i
+    if amount > bank
+      puts "Your #{amount} bet is more than you have in your bank."
+      puts "You bet what's in your bank."
+      self.current_bet = bank
+    elsif amount < MINIMUM_BET && bank >= MINIMUM_BET
+      puts "You have at least #{bank} to bet."
+      puts "You must bet the minimum bet: #{MINIMUM_BET}."
+      bet
+    else
+      puts "You bet #{amount}."
+      self.current_bet = amount
+    end
+  end
+  
+  def bankrupt?
+    bank == 0
+  end
+  
+  def won_hand
+    puts "You won: #{current_bet}"
+    self.bank += current_bet
+    puts "#{name}'s bank: #{bank}"
+    self.current_bet = 0
+  end
+  
+  def lost_hand
+    puts "You lost: #{current_bet}"
+    self.bank -= current_bet
+    puts "#{name}'s bank: #{bank}"
+    self.current_bet = 0
+  end
+  
+  def tied_hand
+    puts "You tied and neither won nor lost: #{current_bet}"
+    puts "#{name}'s bank: #{bank}"
+    self.current_bet = 0
   end
 end
 
@@ -149,7 +199,7 @@ class Deck
 
   def reset_deck(number)
     deck = []
-    for i in 1..number do
+    (1..number).each do
       SUITS.each do |suit|
         VALUES.each do |value|
           deck << Card.new(suit, value)
@@ -184,40 +234,105 @@ class Blackjack
   attr_accessor :deck
   def play
     system 'clear'
-    deck      = Deck.new 1
+    say_title "Welcome to Blackjack"
+    
     player1   = Player.new
     the_house = TheHouse.new
-
-    deck.shuffle_deck
-
-    #Deal cards
-    player1.hand.add_card deck.deal_card_from_deck
-    show_all_cards player1
-    the_house.hand.add_card deck.deal_card_from_deck
-    deal_delay
-    player1.hand.add_card deck.deal_card_from_deck
-    show_all_cards player1
-    the_house.hand.add_card deck.deal_card_from_deck
-    deal_delay
-    show_top_card the_house
-    show_all_cards player1
-
-    #Ask Player to hit or stay?
-    while player1.hit_value && !player1.hand.busted?
-      player1.hit?
-      player1.hand.add_card deck.deal_card_from_deck if player1.hit_value
+    
+    while player1.play_again
+      system 'clear'
+      say_title "Hello, #{player1.name}. Let's Play"
+      deck      = Deck.new 2
+      deck.shuffle_deck
+      reset_hand(player1, the_house)
+      #Ask player to bet
+      player1.bet
+      
+      #Deal cards
+      player1.hand.add_card deck.deal_card_from_deck
       show_all_cards player1
-    end
-
-    show_all_cards the_house
-    #Computer hits or stays
-    unless player1.hand.busted? && the_house.hit_value
-      the_house.hit?
-      the_house.hand.add_card deck.deal_card_from_deck if the_house.hit_value
+      the_house.hand.add_card deck.deal_card_from_deck
+      show_no_card the_house
+      deal_delay
+      player1.hand.add_card deck.deal_card_from_deck
+      show_all_cards player1
+      the_house.hand.add_card deck.deal_card_from_deck
+      deal_delay
+      show_top_card the_house
+      show_all_cards player1
+  
+      #Ask Player to hit or stay?
+      while player1.hit_value && !player1.hand.busted?
+        player1.hit?
+        say_title "#{player1.name}, Your Turn"
+        player1.hand.add_card deck.deal_card_from_deck if player1.hit_value
+        show_all_cards player1
+        show_top_card the_house
+      end
+  
       show_all_cards the_house
+      #Computer hits or stays
+      while !player1.hand.busted? && the_house.hit_value
+        the_house.hit?
+        the_house.hand.add_card deck.deal_card_from_deck if the_house.hit_value
+        show_all_cards the_house
+      end
+  
+      #Declare winner
+      say_title "Hand Over"
+      show_winner(player1, the_house)
+      
+      #Ask to play again
+      say_title "Play Again?"
+      ask_player_to_play_again(player1)
     end
-
-    #
+    
+    say_title "GAME OVER"
+    puts "You left the table with #{player1.bank} in your pocket."
+    puts "Thank you for playing Blackjack!"
+  end
+  
+  def say_title(message)
+    puts "#{"-"*15}#{message}#{"-"*15}"
+  end
+  
+  def say_goodbye(player)
+    system 'clear'
+    puts "#{player.name}, sorry to see you go, thank you for playing Blackjack!"
+  end
+  
+  def reset_hand(player, the_house)
+    player.hand         = Hand.new
+    player.hit_value    = true
+    the_house.hand      = Hand.new
+    the_house.hit_value = true
+  end
+  
+  def ask_player_to_play_again(player)
+    if player.bankrupt?
+      puts "You are bankrupt with #{player.bank} dollars."
+      puts "Would you like to keep playing and add 1000 to your bank? y or n"
+      answer = gets.chomp.downcase
+      if ['y','n'].include? answer
+        player.bank = 1000 if answer == 'y'
+        player.hand = [] 
+        player.play_again = answer == 'y'
+      else
+        puts "#{answer} is an invalid entry. y or n."
+        ask_player_to_play_again(player)
+      end
+    else
+      puts "You have #{player.bank} dollars."
+      puts "Do you wish to keep playing? y or n"
+      answer = gets.chomp.downcase
+      if ['y','n'].include? answer
+        player.play_again = answer == 'y'
+      else
+        puts "#{answer} is invalid. y or n."
+        ask_player_to_play_again(player)
+      end
+    end
+      
   end
 
   def ask_player_to_hit_or_stay(player)
@@ -232,11 +347,16 @@ class Blackjack
   end
 
   def deal_delay
-    sleep 0
+    sleep 1
   end
 
   def show_top_card(player)
     puts "#{player.name} shows: #{player.hand.cards[0]} and #{Card.new("Unknown", "Unknown")}."
+    puts ""
+  end
+  
+  def show_no_card(player)
+    puts "#{player.name} shows: #{Card.new("Unknown","Unknown")}."
     puts ""
   end
 
@@ -245,9 +365,61 @@ class Blackjack
     puts "#{player.name}'s hand is valued at #{player.hand.calculate_total}."
     puts ""
   end
+  
+  def show_winner(player, the_house)
+    if player.hand.busted?
+      puts "#{player.name} busted with #{player.hand.calculate_total}."
+      player.lost_hand
+    elsif the_house.hand.busted?
+      puts "#{the_house.name} busted with #{the_house.hand.calculate_total}."
+      player.won_hand
+    elsif player.hand.calculate_total == the_house.hand.calculate_total
+      show_current_score(player, the_house)
+      player.tied_hand
+    elsif player.hand.calculate_total > the_house.hand.calculate_total
+      show_current_score(player, the_house)
+      player.won_hand
+    elsif player.hand.calculate_total < the_house.hand.calculate_total
+      show_current_score(player, the_house)
+      player.lost_hand
+    end
+  end
+  
+  def show_current_score(player, the_house)
+    puts "#{player.name} has #{player.hand.calculate_total} and #{the_house.name} has #{the_house.hand.calculate_total}."
+  end
 end
 
 Blackjack.new.play
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
