@@ -200,7 +200,7 @@ class Blackjack
       reset_deck if play_again && deck.too_small?
     end
 
-    # game_over
+    game_over
   end
 
   private
