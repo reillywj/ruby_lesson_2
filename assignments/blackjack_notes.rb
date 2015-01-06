@@ -275,6 +275,8 @@ class Blackjack
       say "The #{dealer.name} busted with #{dealer.total}."
     elsif player.blackjack?
       say "BLACKJACK! You win!"
+    elsif dealer.blackjack?
+      say "The #{dealer.name} hit BLACKJACK. You lose."
     elsif player.total == dealer.total
       say "It's a tie!"
     elsif player.total > dealer.total
@@ -325,7 +327,6 @@ class Blackjack
   def say(message)
     puts message
   end
-
 end
 
 game = Blackjack.new 2
