@@ -232,6 +232,9 @@ end
 
 class Blackjack
   attr_accessor :deck
+
+  UNKNOWN_CARD = Card.new("Unknown Suit", "Unknown Value")
+
   def play
     system 'clear'
     say_title "Welcome to Blackjack"
@@ -250,13 +253,10 @@ class Blackjack
       
       #Deal cards
       player1.hand.add_card deck.deal_card_from_deck
-      show_all_cards player1
       the_house.hand.add_card deck.deal_card_from_deck
-      show_no_card the_house
-      deal_delay
       player1.hand.add_card deck.deal_card_from_deck
-      show_all_cards player1
       the_house.hand.add_card deck.deal_card_from_deck
+      say_title "Cards are being dealt!"
       deal_delay
       show_top_card the_house
       show_all_cards player1
@@ -270,16 +270,19 @@ class Blackjack
         show_top_card the_house
       end
   
-      show_all_cards the_house
       #Computer hits or stays
       while !player1.hand.busted? && the_house.hit_value
+        show_all_cards the_house
+        deal_delay 1.25
         the_house.hit?
         the_house.hand.add_card deck.deal_card_from_deck if the_house.hit_value
-        show_all_cards the_house
       end
   
       #Declare winner
+      system 'clear'
       say_title "Hand Over"
+      show_all_cards the_house
+      show_all_cards player1
       show_winner(player1, the_house)
       
       #Ask to play again
@@ -346,17 +349,17 @@ class Blackjack
     end
   end
 
-  def deal_delay
-    sleep 1
+  def deal_delay(time = 2)
+    sleep time
   end
 
   def show_top_card(player)
-    puts "#{player.name} shows: #{player.hand.cards[0]} and #{Card.new("Unknown", "Unknown")}."
+    puts "#{player.name} shows: #{player.hand.cards[1]} and #{UNKNOWN_CARD}."
     puts ""
   end
   
   def show_no_card(player)
-    puts "#{player.name} shows: #{Card.new("Unknown","Unknown")}."
+    puts "#{player.name} shows: #{UNKNOWN_CARD}."
     puts ""
   end
 
@@ -376,6 +379,9 @@ class Blackjack
     elsif player.hand.calculate_total == the_house.hand.calculate_total
       show_current_score(player, the_house)
       player.tied_hand
+    elsif player.hand.calculate_total == 21
+      puts "BLACKJACK! You hit #{player.hand.calculate_total}."
+      player.won_hand
     elsif player.hand.calculate_total > the_house.hand.calculate_total
       show_current_score(player, the_house)
       player.won_hand
@@ -392,44 +398,6 @@ end
 
 Blackjack.new.play
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#88888888888888888888888888
+#8888888888THEEND8888888888
+#88888888888888888888888888
